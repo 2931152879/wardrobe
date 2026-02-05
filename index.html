@@ -2,6 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>衣柜</title>
 
 <style>
@@ -12,23 +13,23 @@
     justify-content: center;
     align-items: center;
     height: 100vh;
+    overflow: hidden;
   }
 
   #stage {
     line-height: 2;
-    transition: opacity 1s ease;
-    font-size: clamp(28px, 4vw, 48px);
+    font-size: clamp(26px, 5vw, 48px);
     font-family:
       "Source Han Serif SC",
       "Noto Serif SC",
       "Songti SC",
       "STSong",
       serif;
+    text-align: left;
+    transition: opacity 0.8s ease;
   }
 
-  .block {
-    text-align: left;
-  }
+  .block { margin-bottom: 1.2em; }
 
   .char {
     opacity: 0;
@@ -36,53 +37,33 @@
     transition: opacity 0.8s ease;
   }
 
-  .char.visible {
-    opacity: 1;
-  }
+  .char.visible { opacity: 1; }
 
   .char.drift {
     opacity: 0.4;
     transition: opacity 1.2s ease;
   }
 
-  /* 电脑：hover 显现 */
+  /* 电脑 hover */
   @media (hover: hover) {
-    .char.drift:hover {
-      opacity: 1 !important;
-    }
+    .char.drift:hover { opacity: 1 !important; }
   }
 
-  /* 手机：click 显现 */
+  /* 手机 click */
   @media (hover: none) {
-    .char.drift {
-      opacity: 0.35;
-    }
-    .char.drift.active {
-      opacity: 1 !important;
-    }
+    .char.drift { opacity: 0.3; }
+    .char.drift.active { opacity: 1 !important; }
   }
-
-  /* 衣柜 */
 
   .wardrobe {
     transform: scaleY(2.4);
-    letter-spacing: 0.4em;
+    letter-spacing: 0.5em;
     cursor: pointer;
   }
 
-  /* 痕迹 */
+  .trace { cursor: pointer; }
 
-  .trace {
-    cursor: pointer;
-  }
-
-  /* 名字重叠 */
-
-  .name-wrap {
-    position: relative;
-    cursor: pointer;
-  }
-
+  .name-wrap { position: relative; cursor: pointer; }
   .name-bottom {
     position: absolute;
     left: 0;
@@ -90,42 +71,35 @@
     opacity: 0;
     transition: opacity 0.6s ease;
   }
+  .name-wrap:hover .name-top { opacity: 0.25; }
+  .name-wrap:hover .name-bottom { opacity: 1; }
 
-  .name-wrap:hover .name-top {
-    opacity: 0.25;
-  }
-
-  .name-wrap:hover .name-bottom {
-    opacity: 1;
-  }
-
-  /* 草地 */
-
-  .spacing {
-    letter-spacing: 0.6em;
-    cursor: pointer;
-  }
+  .spacing { letter-spacing: 0.6em; cursor: pointer; }
 
   input {
     border: none;
     border-bottom: 1px solid #000;
     outline: none;
+    background: transparent;
     font-family: inherit;
     font-size: inherit;
     width: 6em;
     margin: 0 0.3em;
-    background: transparent;
   }
 </style>
 </head>
-
 <body>
 <div id="stage"></div>
 
 <script>
 const stage = document.getElementById("stage");
+const isTouch = window.matchMedia('(hover: none)').matches;
 
-/* 工具 */
+function vibrateHint() {
+  if (navigator.vibrate) {
+    navigator.vibrate([20, 30, 20]);
+  }
+}
 
 function clearStage(next) {
   stage.style.opacity = 0;
@@ -133,186 +107,176 @@ function clearStage(next) {
     stage.innerHTML = "";
     stage.style.opacity = 1;
     next && next();
-  }, 900);
+  }, 800);
+}
+
+function randomFlicker(el) {
+  if (!el.classList.contains('drift')) return;
+  if (!el.classList.contains('active')) {
+    el.style.opacity = Math.random() * 0.4 + 0.25;
+  }
+  setTimeout(() => randomFlicker(el), 1200 + Math.random() * 1200);
 }
 
 function startDrift(span) {
   setTimeout(() => {
-    span.classList.add("drift");
+    span.classList.add('drift');
     randomFlicker(span);
-
-    // 手机点击显现
-    span.addEventListener("click", e => {
-      if (window.matchMedia("(hover: none)").matches) {
-        e.stopPropagation();
-        span.classList.toggle("active");
-      }
-    });
-  }, 1800);
-}
-
-function randomFlicker(el) {
-  if (!el.classList.contains("drift")) return;
-  if (!el.classList.contains("active")) {
-    el.style.opacity = Math.random() * 0.45 + 0.25;
-  }
-  setTimeout(() => randomFlicker(el), 1200 + Math.random() * 1200);
+    if (isTouch) {
+      span.addEventListener('click', () => {
+        span.classList.toggle('active');
+      });
+    }
+  }, 1600);
 }
 
 function revealChars(text, container, callback) {
   let delay = 0;
   [...text].forEach(char => {
-    const span = document.createElement("span");
-    span.className = "char";
+    const span = document.createElement('span');
+    span.className = 'char';
     span.textContent = char;
     container.appendChild(span);
 
     setTimeout(() => {
-      span.classList.add("visible");
+      span.classList.add('visible');
       startDrift(span);
     }, delay);
 
-    delay += 140;
+    delay += 120;
   });
-  setTimeout(callback, delay + 250);
+  setTimeout(callback, delay + 200);
 }
 
 /* ① 衣柜 */
-
 function showWardrobe() {
-  const box = document.createElement("div");
-  box.className = "wardrobe";
+  const box = document.createElement('div');
+  box.className = 'wardrobe';
   stage.appendChild(box);
 
-  revealChars("衣柜", box, () => {
+  revealChars('衣柜', box, () => {
+    if (isTouch) vibrateHint();
     box.onclick = () => clearStage(showFirstText);
-    flickerWardrobe(box);
-  });
-}
-
-function flickerWardrobe(el) {
-  el.querySelectorAll(".char").forEach(c => {
-    setInterval(() => {
-      if (!c.classList.contains("active")) {
-        c.style.opacity = Math.random() * 0.6 + 0.4;
-      }
-    }, 500 + Math.random() * 800);
+    box.querySelectorAll('.char').forEach(c => {
+      setInterval(() => {
+        if (!c.classList.contains('active')) {
+          c.style.opacity = Math.random() * 0.6 + 0.4;
+        }
+      }, 500 + Math.random() * 800);
+    });
   });
 }
 
 /* ② 第一段 + 痕迹 */
-
 function showFirstText() {
-  const block = document.createElement("div");
-  block.className = "block";
+  const block = document.createElement('div');
+  block.className = 'block';
   stage.appendChild(block);
 
-  const line1 = document.createElement("div");
-  const line2 = document.createElement("div");
+  const line1 = document.createElement('div');
+  const line2 = document.createElement('div');
   block.appendChild(line1);
   block.appendChild(line2);
 
-  revealChars(
-    "李振洋衣柜里总有几件很少穿出去的大衣。",
-    line1,
-    () => {
-      revealChars(
-        "出于怀旧，总想从外物寻找过去的",
-        line2,
-        showTrace
-      );
-    }
-  );
+  revealChars('李振洋衣柜里总有几件很少穿出去的大衣。', line1, () => {
+    revealChars('出于怀旧，总想从外物寻找过去的', line2, showTrace);
+  });
 }
 
 function showTrace() {
-  const trace = document.createElement("div");
-  trace.className = "trace";
+  const trace = document.createElement('div');
+  trace.className = 'trace';
   stage.appendChild(trace);
 
-  revealChars("痕迹", trace, () => {
-    trace.onclick = () => clearStage(showName);
+  revealChars('痕迹', trace, () => {
+    if (isTouch) vibrateHint();
+    trace.onclick = e => {
+      e.stopPropagation();
+      clearStage(showName);
+    };
   });
 }
 
 /* ③ 岳明辉 / 李振洋 */
-
 function showName() {
-  const block = document.createElement("div");
-  block.className = "block";
+  const block = document.createElement('div');
+  block.className = 'block';
   stage.appendChild(block);
 
-  const line = document.createElement("div");
+  const line = document.createElement('div');
   block.appendChild(line);
 
-  revealChars("深秋时候他会分一件给", line, () => {
-    const wrap = document.createElement("span");
-    wrap.className = "name-wrap";
-
-    const top = document.createElement("span");
-    top.className = "name-top";
-    const bottom = document.createElement("span");
-    bottom.className = "name-bottom";
+  revealChars('深秋时候他会分一件给', line, () => {
+    const wrap = document.createElement('span');
+    wrap.className = 'name-wrap';
+    const top = document.createElement('span');
+    top.className = 'name-top';
+    const bottom = document.createElement('span');
+    bottom.className = 'name-bottom';
 
     wrap.appendChild(top);
     wrap.appendChild(bottom);
     line.appendChild(wrap);
 
-    revealChars("岳明辉", top, () => {
-      revealChars("李振洋", bottom, () => {
-        wrap.onclick = () => clearStage(showGrass);
+    revealChars('岳明辉', top, () => {
+      revealChars('李振洋', bottom, () => {
+        if (isTouch) vibrateHint();
+        wrap.onclick = e => {
+          e.stopPropagation();
+          clearStage(showGrass);
+        };
       });
     });
   });
 }
 
 /* ④ 荒凉的草地 */
-
 function showGrass() {
-  const block = document.createElement("div");
-  block.className = "block";
+  const block = document.createElement('div');
+  block.className = 'block';
   stage.appendChild(block);
 
-  const line = document.createElement("div");
+  const line = document.createElement('div');
   block.appendChild(line);
 
-  revealChars("两个人开车去某个", line, () => {
-    const grass = document.createElement("span");
-    grass.className = "spacing";
+  revealChars('两个人开车去某个', line, () => {
+    const grass = document.createElement('span');
+    grass.className = 'spacing';
     line.appendChild(grass);
 
-    revealChars("荒凉的草地", grass, () => {
-      grass.onclick = () => clearStage(showNameInput);
+    revealChars('荒凉的草地', grass, () => {
+      if (isTouch) vibrateHint();
+      grass.onclick = e => {
+        e.stopPropagation();
+        clearStage(showNameInput);
+      };
     });
   });
 }
 
 /* ⑤ 起名字 */
-
 function showNameInput() {
-  const block = document.createElement("div");
-  block.className = "block";
+  const block = document.createElement('div');
+  block.className = 'block';
   stage.appendChild(block);
 
-  const line = document.createElement("div");
+  const line = document.createElement('div');
   block.appendChild(line);
 
-  revealChars("给某棵光秃的树起一个荒唐", line, () => {
-    revealChars("名字", line, () => {
-      const input = document.createElement("input");
-      const suffix = document.createElement("span");
+  revealChars('给某棵光秃的树起一个荒唐', line, () => {
+    revealChars('名字', line, () => {
+      const input = document.createElement('input');
+      const suffix = document.createElement('span');
       line.appendChild(input);
       line.appendChild(suffix);
 
-      input.addEventListener("input", () => {
-        suffix.textContent = "都可以。";
+      input.addEventListener('input', () => {
+        suffix.textContent = '都可以。';
       });
     });
   });
 }
 
-    
-/* 启动 */
 showWardrobe();
 </script>
 </body>
