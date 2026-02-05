@@ -29,7 +29,9 @@
     transition: opacity 0.8s ease;
   }
 
-  .block { margin-bottom: 1.2em; }
+  .block {
+    text-align: left;
+  }
 
   .char {
     opacity: 0;
@@ -37,7 +39,9 @@
     transition: opacity 0.8s ease;
   }
 
-  .char.visible { opacity: 1; }
+  .char.visible {
+    opacity: 1;
+  }
 
   .char.drift {
     opacity: 0.4;
@@ -61,9 +65,15 @@
     cursor: pointer;
   }
 
-  .trace { cursor: pointer; }
+  .trace {
+    cursor: pointer;
+  }
 
-  .name-wrap { position: relative; cursor: pointer; }
+  .name-wrap {
+    position: relative;
+    cursor: pointer;
+  }
+
   .name-bottom {
     position: absolute;
     left: 0;
@@ -71,10 +81,19 @@
     opacity: 0;
     transition: opacity 0.6s ease;
   }
-  .name-wrap:hover .name-top { opacity: 0.25; }
-  .name-wrap:hover .name-bottom { opacity: 1; }
 
-  .spacing { letter-spacing: 0.6em; cursor: pointer; }
+  .name-wrap:hover .name-top {
+    opacity: 0.25;
+  }
+
+  .name-wrap:hover .name-bottom {
+    opacity: 1;
+  }
+
+  .spacing {
+    letter-spacing: 0.6em;
+    cursor: pointer;
+  }
 
   input {
     border: none;
